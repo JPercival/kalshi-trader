@@ -1,9 +1,11 @@
 ---
 id: KAL-13
 title: Paper trade execution
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@ros'
 created_date: '2026-02-02 17:49'
+updated_date: '2026-02-02 18:29'
 labels:
   - engine
   - trading
