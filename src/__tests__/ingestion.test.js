@@ -170,6 +170,11 @@ describe('ingestMarkets', () => {
     if (handle) handle.close();
   });
 
+  // Helper: close time 2 days from now
+  const soon = new Date(Date.now() + 2 * 86400000).toISOString();
+  // Helper: close time 30 days from now
+  const far = new Date(Date.now() + 30 * 86400000).toISOString();
+
   it('fetches events with nested markets and upserts them', async () => {
     const { db } = handle;
     const mockClient = {
@@ -177,8 +182,8 @@ describe('ingestMarkets', () => {
         {
           event_ticker: 'EVT-1', category: 'Economics', series_ticker: 'SER-1',
           markets: [
-            { ticker: 'ING-1', title: 'CPI Market', status: 'open', last_price: 0.55, volume: 100, open_interest: 50 },
-            { ticker: 'ING-2', title: 'GDP Market', status: 'open', last_price: 0.30, volume: 10, open_interest: 5 },
+            { ticker: 'ING-1', title: 'CPI Market', status: 'open', last_price: 0.55, volume: 100, open_interest: 50, close_time: soon },
+            { ticker: 'ING-2', title: 'GDP Market', status: 'open', last_price: 0.30, volume: 10, open_interest: 5, close_time: soon },
           ],
         },
       ],
@@ -190,7 +195,6 @@ describe('ingestMarkets', () => {
     expect(result.total).toBe(2);
     const count = db.prepare('SELECT COUNT(*) as cnt FROM markets').get();
     expect(count.cnt).toBe(2);
-    // Verify category was propagated from event
     const m = db.prepare("SELECT category FROM markets WHERE ticker = 'ING-1'").get();
     expect(m.category).toBe('Economics');
   });
@@ -202,8 +206,8 @@ describe('ingestMarkets', () => {
         {
           event_ticker: 'EVT-1', category: 'Economics',
           markets: [
-            { ticker: 'ACTIVE', title: 'Active', status: 'open', volume: 50, open_interest: 10 },
-            { ticker: 'DEAD', title: 'Dead', status: 'open', volume: 0, open_interest: 0 },
+            { ticker: 'ACTIVE', title: 'Active', status: 'open', volume: 50, open_interest: 10, close_time: soon },
+            { ticker: 'DEAD', title: 'Dead', status: 'open', volume: 0, open_interest: 0, close_time: soon },
           ],
         },
       ],
@@ -214,12 +218,31 @@ describe('ingestMarkets', () => {
     expect(result.upserted).toBe(1);
   });
 
+  it('filters out markets closing beyond maxCloseDays', async () => {
+    const { db } = handle;
+    const mockClient = {
+      fetchEvents: async () => [
+        {
+          event_ticker: 'EVT-1', category: 'Economics',
+          markets: [
+            { ticker: 'SOON', status: 'open', volume: 10, close_time: soon },
+            { ticker: 'FAR', status: 'open', volume: 10, close_time: far },
+          ],
+        },
+      ],
+    };
+
+    const result = await ingestMarkets({ db, client: mockClient, maxCloseDays: 7 });
+    expect(result.total).toBe(1);
+    expect(result.upserted).toBe(1);
+  });
+
   it('filters events by category', async () => {
     const { db } = handle;
     const mockClient = {
       fetchEvents: async () => [
-        { event_ticker: 'E1', category: 'Economics', markets: [{ ticker: 'M1', status: 'open', volume: 10 }] },
-        { event_ticker: 'E2', category: 'Unknown Category', markets: [{ ticker: 'M2', status: 'open', volume: 10 }] },
+        { event_ticker: 'E1', category: 'Economics', markets: [{ ticker: 'M1', status: 'open', volume: 10, close_time: soon }] },
+        { event_ticker: 'E2', category: 'Unknown Category', markets: [{ ticker: 'M2', status: 'open', volume: 10, close_time: soon }] },
       ],
     };
 

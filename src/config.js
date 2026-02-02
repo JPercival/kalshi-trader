@@ -31,6 +31,7 @@ export function loadConfig(env) {
     maxPositionPct: parseFloat(env.MAX_POSITION_PCT || '5'),
     kellyFraction: parseFloat(env.KELLY_FRACTION || '0.25'),
     minLiquidity: parseInt(env.MIN_LIQUIDITY || '100', 10),
+    maxCloseDays: parseInt(env.MAX_CLOSE_DAYS || '7', 10),
 
     // Telegram alerts
     telegramBotToken: env.TELEGRAM_BOT_TOKEN || '',

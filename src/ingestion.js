@@ -108,7 +108,22 @@ const DEFAULT_CATEGORIES = [
  * @param {number} [opts.minVolume] - Min volume OR open_interest to include (default 1)
  * @param {object} [opts.logger]
  */
-export async function ingestMarkets({ db, client, categories = DEFAULT_CATEGORIES, minVolume = 1, logger = console }) {
+/**
+ * Check if a market closes within the given horizon.
+ * @param {object} market
+ * @param {number} maxCloseMs - Maximum close time in ms from now
+ * @returns {boolean}
+ */
+export function closesWithin(market, maxCloseMs) {
+  const closeTime = market.close_time || market.expected_expiration_time || market.expiration_time;
+  if (!closeTime) return false;
+  const closeMs = new Date(closeTime).getTime();
+  return closeMs > Date.now() && closeMs <= Date.now() + maxCloseMs;
+}
+
+const MS_PER_DAY = 86400000;
+
+export async function ingestMarkets({ db, client, categories = DEFAULT_CATEGORIES, minVolume = 1, maxCloseDays = 7, logger = console }) {
   logger.log('[ingest] Fetching open events with nested markets...');
   const allEvents = await client.fetchEvents({ status: 'open', withNestedMarkets: true });
 
@@ -118,6 +133,7 @@ export async function ingestMarkets({ db, client, categories = DEFAULT_CATEGORIE
   logger.log(`[ingest] ${allEvents.length} events total, ${events.length} in target categories`);
 
   // Extract markets from nested event data
+  const maxCloseMs = maxCloseDays * MS_PER_DAY;
   let allMarkets = [];
   for (const event of events) {
     const eventMarkets = event.markets || [];
@@ -129,9 +145,12 @@ export async function ingestMarkets({ db, client, categories = DEFAULT_CATEGORIE
     allMarkets.push(...eventMarkets);
   }
 
-  // Filter out zero-activity markets
-  const markets = allMarkets.filter(m => (m.volume || 0) >= minVolume || (m.open_interest || 0) >= minVolume);
-  logger.log(`[ingest] ${allMarkets.length} markets from events, ${markets.length} with activity (vol or OI >= ${minVolume}), upserting...`);
+  // Filter: must have activity AND close within horizon
+  const markets = allMarkets.filter(m =>
+    ((m.volume || 0) >= minVolume || (m.open_interest || 0) >= minVolume) &&
+    closesWithin(m, maxCloseMs)
+  );
+  logger.log(`[ingest] ${allMarkets.length} markets from events, ${markets.length} closing within ${maxCloseDays}d with activity, upserting...`);
 
   const result = upsertMarkets(db, markets);
   return { ...result, total: markets.length };

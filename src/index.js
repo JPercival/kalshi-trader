@@ -51,7 +51,7 @@ export async function main() {
   async function pollCycle() {
     try {
       // 1. Ingest markets from Kalshi
-      const { upserted, total } = await ingestMarkets({ db, client });
+      const { upserted, total } = await ingestMarkets({ db, client, maxCloseDays: config.maxCloseDays });
       console.log(`[poll] Ingested ${upserted} new/updated markets (${total} total)`);
 
       // 2. Snapshot prices for active markets
