@@ -62,7 +62,7 @@ export function createKalshiClient({ baseUrl, fetch: fetchFn = globalThis.fetch,
    * @param {number} [params.limit] - Results per page (max 200)
    * @returns {Promise<KalshiEvent[]>}
    */
-  async function fetchEvents({ status = 'open', limit = 200 } = {}) {
+  async function fetchEvents({ status = 'open', limit = 200, withNestedMarkets = false } = {}) {
     const allEvents = [];
     let cursor = '';
 
@@ -70,6 +70,7 @@ export function createKalshiClient({ baseUrl, fetch: fetchFn = globalThis.fetch,
       const url = new URL(`${baseUrl}/events`);
       url.searchParams.set('status', status);
       url.searchParams.set('limit', String(limit));
+      if (withNestedMarkets) url.searchParams.set('with_nested_markets', 'true');
       if (cursor) url.searchParams.set('cursor', cursor);
 
       const res = await fetchWithRetry(url.toString());

@@ -170,33 +170,74 @@ describe('ingestMarkets', () => {
     if (handle) handle.close();
   });
 
-  it('fetches markets from client and upserts them', async () => {
+  it('fetches events with nested markets and upserts them', async () => {
     const { db } = handle;
     const mockClient = {
-      fetchMarkets: async () => [
-        { ticker: 'ING-1', title: 'Test Market', status: 'open', last_price: 0.55, volume: 100, open_interest: 50 },
-        { ticker: 'ING-2', title: 'Another Market', status: 'open', last_price: 0.30, volume: 10, open_interest: 5 },
+      fetchEvents: async () => [
+        {
+          event_ticker: 'EVT-1', category: 'Economics', series_ticker: 'SER-1',
+          markets: [
+            { ticker: 'ING-1', title: 'CPI Market', status: 'open', last_price: 0.55, volume: 100, open_interest: 50 },
+            { ticker: 'ING-2', title: 'GDP Market', status: 'open', last_price: 0.30, volume: 10, open_interest: 5 },
+          ],
+        },
       ],
     };
 
     const result = await ingestMarkets({ db, client: mockClient });
 
     expect(result.upserted).toBe(2);
+    expect(result.total).toBe(2);
     const count = db.prepare('SELECT COUNT(*) as cnt FROM markets').get();
     expect(count.cnt).toBe(2);
+    // Verify category was propagated from event
+    const m = db.prepare("SELECT category FROM markets WHERE ticker = 'ING-1'").get();
+    expect(m.category).toBe('Economics');
   });
 
-  it('passes status=open to fetchMarkets', async () => {
+  it('filters out zero-activity markets', async () => {
+    const { db } = handle;
+    const mockClient = {
+      fetchEvents: async () => [
+        {
+          event_ticker: 'EVT-1', category: 'Economics',
+          markets: [
+            { ticker: 'ACTIVE', title: 'Active', status: 'open', volume: 50, open_interest: 10 },
+            { ticker: 'DEAD', title: 'Dead', status: 'open', volume: 0, open_interest: 0 },
+          ],
+        },
+      ],
+    };
+
+    const result = await ingestMarkets({ db, client: mockClient });
+    expect(result.total).toBe(1);
+    expect(result.upserted).toBe(1);
+  });
+
+  it('filters events by category', async () => {
+    const { db } = handle;
+    const mockClient = {
+      fetchEvents: async () => [
+        { event_ticker: 'E1', category: 'Economics', markets: [{ ticker: 'M1', status: 'open', volume: 10 }] },
+        { event_ticker: 'E2', category: 'Unknown Category', markets: [{ ticker: 'M2', status: 'open', volume: 10 }] },
+      ],
+    };
+
+    const result = await ingestMarkets({ db, client: mockClient });
+    expect(result.upserted).toBe(1);
+  });
+
+  it('passes withNestedMarkets to fetchEvents', async () => {
     const { db } = handle;
     let calledWith;
     const mockClient = {
-      fetchMarkets: async (params) => {
+      fetchEvents: async (params) => {
         calledWith = params;
         return [];
       },
     };
 
     await ingestMarkets({ db, client: mockClient });
-    expect(calledWith).toEqual({ status: 'open' });
+    expect(calledWith).toEqual({ status: 'open', withNestedMarkets: true });
   });
 });

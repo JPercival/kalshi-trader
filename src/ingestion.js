@@ -75,19 +75,64 @@ export function mapStatus(apiStatus) {
  * @returns {Promise<{ upserted: number }>}
  */
 /**
- * Ingest markets from Kalshi API.
- * Filters out zero-activity markets (no volume and no open interest) to skip
- * the thousands of provisional/empty sports parlays.
+ * Default categories to ingest. These are the ones our models can work with.
+ * Sports included — models may find edges in thin markets with less competition.
+ */
+const DEFAULT_CATEGORIES = [
+  'Climate and Weather',
+  'Economics',
+  'Financials',
+  'Politics',
+  'Science and Technology',
+  'World',
+  'Health',
+  'Elections',
+  'Companies',
+  'Sports',
+  'Entertainment',
+  'Social',
+  'Transportation',
+];
+
+/**
+ * Ingest markets from Kalshi API using an event-first strategy.
+ * 1. Fetch all open events (3-4K, much smaller than 60K+ markets)
+ * 2. Filter events by category
+ * 3. Fetch markets only for matching events (with_nested_markets)
+ * 4. Filter out zero-activity markets
+ *
  * @param {object} opts
  * @param {import('better-sqlite3').Database} opts.db
  * @param {object} opts.client - Kalshi API client
- * @param {number} [opts.minVolume] - Minimum volume OR open_interest to include (default 1)
+ * @param {string[]} [opts.categories] - Event categories to include
+ * @param {number} [opts.minVolume] - Min volume OR open_interest to include (default 1)
  * @param {object} [opts.logger]
  */
-export async function ingestMarkets({ db, client, minVolume = 1, logger = console }) {
-  logger.log('[ingest] Fetching open markets from Kalshi...');
-  const allMarkets = await client.fetchMarkets({ status: 'open' });
+export async function ingestMarkets({ db, client, categories = DEFAULT_CATEGORIES, minVolume = 1, logger = console }) {
+  logger.log('[ingest] Fetching open events with nested markets...');
+  const allEvents = await client.fetchEvents({ status: 'open', withNestedMarkets: true });
+
+  // Filter to categories we care about
+  const catSet = new Set(categories.map(c => c.toLowerCase()));
+  const events = allEvents.filter(e => catSet.has((e.category || '').toLowerCase()));
+  logger.log(`[ingest] ${allEvents.length} events total, ${events.length} in target categories`);
+
+  // Extract markets from nested event data
+  let allMarkets = [];
+  for (const event of events) {
+    const eventMarkets = event.markets || [];
+    for (const m of eventMarkets) {
+      m.category = m.category || event.category;
+      m.event_ticker = m.event_ticker || event.event_ticker;
+      m.series_ticker = m.series_ticker || event.series_ticker;
+    }
+    allMarkets.push(...eventMarkets);
+  }
+
+  // Filter out zero-activity markets
   const markets = allMarkets.filter(m => (m.volume || 0) >= minVolume || (m.open_interest || 0) >= minVolume);
-  logger.log(`[ingest] Fetched ${allMarkets.length} total, ${markets.length} with activity (volume or OI >= ${minVolume}), upserting...`);
-  return upsertMarkets(db, markets);
+  logger.log(`[ingest] ${allMarkets.length} markets from events, ${markets.length} with activity (vol or OI >= ${minVolume}), upserting...`);
+
+  const result = upsertMarkets(db, markets);
+  return { ...result, total: markets.length };
 }
