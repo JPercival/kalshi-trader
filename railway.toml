@@ -1,0 +1,38 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "node src/cli.js serve"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 100
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+[variables]
+# Kalshi API
+KALSHI_API_BASE = "https://api.elections.kalshi.com/trade-api/v2"
+
+# Polling intervals
+MARKET_POLL_INTERVAL_MS = "60000"
+MODEL_RUN_INTERVAL_MS = "300000"
+PRICE_SNAPSHOT_INTERVAL_MS = "300000"
+
+# Trading parameters
+PAPER_BANKROLL = "500"
+MIN_EDGE_PCT = "5"
+MIN_CONFIDENCE = "0.6"
+MAX_POSITION_PCT = "5"
+KELLY_FRACTION = "0.25"
+MIN_LIQUIDITY = "100"
+
+# Web dashboard
+PORT = "3001"
+
+# Note: Set these secrets in Railway Dashboard, not here:
+# - FRED_API_KEY
+# - GOOGLE_CLIENT_ID
+# - GOOGLE_CLIENT_SECRET
+# - SESSION_SECRET
+# - ALLOWED_EMAILS
+# - TELEGRAM_BOT_TOKEN
+# - TELEGRAM_CHAT_ID
