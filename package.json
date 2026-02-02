@@ -1,0 +1,21 @@
+{
+  "name": "kalshi-trader",
+  "version": "0.1.0",
+  "description": "Kalshi prediction market paper trader — model-based mispricing detection",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "ingest": "node src/scripts/ingest-markets.js",
+    "model": "node src/scripts/run-models.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "express": "^4.21.0",
+    "ejs": "^3.1.10",
+    "node-fetch": "^3.3.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
