@@ -38,7 +38,7 @@
  * @param {typeof globalThis.fetch} [opts.fetch] - Fetch implementation (for testing)
  * @returns {{ fetchEvents: Function, fetchMarkets: Function, fetchMarket: Function }}
  */
-export function createKalshiClient({ baseUrl, fetch: fetchFn = globalThis.fetch, maxRetries = 3, retryDelayMs = 2000 }) {
+export function createKalshiClient({ baseUrl, fetch: fetchFn = globalThis.fetch, maxRetries = 3, retryDelayMs = 2000, pageDelayMs = 1000 }) {
   /**
    * Fetch with retry + exponential backoff on 429.
    */
@@ -81,6 +81,7 @@ export function createKalshiClient({ baseUrl, fetch: fetchFn = globalThis.fetch,
       const events = data.events || [];
       allEvents.push(...events);
       cursor = data.cursor || '';
+      if (cursor && pageDelayMs > 0) await new Promise(r => setTimeout(r, pageDelayMs));
     } while (cursor);
 
     return allEvents;
@@ -115,6 +116,7 @@ export function createKalshiClient({ baseUrl, fetch: fetchFn = globalThis.fetch,
       const markets = data.markets || [];
       allMarkets.push(...markets);
       cursor = data.cursor || '';
+      if (cursor && pageDelayMs > 0) await new Promise(r => setTimeout(r, pageDelayMs));
     } while (cursor);
 
     return allMarkets;

@@ -18,7 +18,7 @@ DB_PATH = "/data/kalshi.db"
 KALSHI_API_BASE = "https://api.elections.kalshi.com/trade-api/v2"
 
 # Monitoring intervals
-MARKET_POLL_INTERVAL_MS = "60000"
+MARKET_POLL_INTERVAL_MS = "120000"
 MODEL_RUN_INTERVAL_MS = "300000"
 PRICE_SNAPSHOT_INTERVAL_MS = "300000"
 
