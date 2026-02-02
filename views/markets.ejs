@@ -16,7 +16,7 @@
     <tr><th>Ticker</th><th>Title</th><th>Category</th><th>Status</th><th>Price</th><th>Result</th></tr>
     <% markets.forEach(m => { %>
     <tr>
-      <td><a href="https://kalshi.com/markets/<%= m.event_ticker || m.ticker %>" target="_blank" rel="noopener" style="color: #4f9cf7;"><%= m.ticker %></a></td>
+      <td><a href="https://kalshi.com/markets/<%= (m.series_ticker || m.event_ticker || m.ticker).toLowerCase() %>/_/<%= (m.event_ticker || m.ticker).toLowerCase() %>" target="_blank" rel="noopener" style="color: #4f9cf7;"><%= m.ticker %></a></td>
       <td><%= m.title || '—' %></td>
       <td><%= m.category || '—' %></td>
       <td><%= m.status %></td>

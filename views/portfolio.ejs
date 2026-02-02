@@ -23,7 +23,7 @@
     <tr><th>Ticker</th><th>Side</th><th>Entry</th><th>Contracts</th><th>Cost</th><th>Edge</th></tr>
     <% openTrades.forEach(t => { %>
     <tr>
-      <td><a href="https://kalshi.com/markets/<%= t.event_ticker || t.ticker %>" target="_blank" rel="noopener" style="color: #4f9cf7;"><%= t.ticker %></a></td>
+      <td><a href="https://kalshi.com/markets/<%= (t.series_ticker || t.event_ticker || t.ticker).toLowerCase() %>/_/<%= (t.event_ticker || t.ticker).toLowerCase() %>" target="_blank" rel="noopener" style="color: #4f9cf7;"><%= t.ticker %></a></td>
       <td><span class="badge badge-<%= t.side %>"><%= t.side.toUpperCase() %></span></td>
       <td><%= (t.entry_price * 100).toFixed(0) %>¢</td>
       <td><%= t.contracts %></td>
@@ -43,7 +43,7 @@
     <tr><th>Ticker</th><th>Side</th><th>Entry</th><th>Exit</th><th>Qty</th><th>P&L</th><th>Status</th></tr>
     <% allTrades.forEach(t => { %>
     <tr>
-      <td><a href="https://kalshi.com/markets/<%= t.event_ticker || t.ticker %>" target="_blank" rel="noopener" style="color: #4f9cf7;"><%= t.ticker %></a></td>
+      <td><a href="https://kalshi.com/markets/<%= (t.series_ticker || t.event_ticker || t.ticker).toLowerCase() %>/_/<%= (t.event_ticker || t.ticker).toLowerCase() %>" target="_blank" rel="noopener" style="color: #4f9cf7;"><%= t.ticker %></a></td>
       <td><span class="badge badge-<%= t.side %>"><%= t.side.toUpperCase() %></span></td>
       <td><%= (t.entry_price * 100).toFixed(0) %>¢</td>
       <td><%= t.exit_price != null ? (t.exit_price * 100).toFixed(0) + '¢' : '—' %></td>

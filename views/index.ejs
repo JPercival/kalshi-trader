@@ -35,7 +35,7 @@
     <tr><th>Market</th><th>Category</th><th>Market Price</th><th>Model Prob</th><th>Edge</th><th>Side</th><th>Score</th></tr>
     <% signals.forEach(s => { %>
     <tr>
-      <td><a href="https://kalshi.com/markets/<%= s.eventTicker || s.ticker %>" target="_blank" rel="noopener" style="color: #4f9cf7;"><%= s.ticker %></a></td>
+      <td><a href="https://kalshi.com/markets/<%= (s.seriesTicker || s.eventTicker || s.ticker).toLowerCase() %>/_/<%= (s.eventTicker || s.ticker).toLowerCase() %>" target="_blank" rel="noopener" style="color: #4f9cf7;"><%= s.ticker %></a></td>
       <td><%= s.category %></td>
       <td><%= (s.marketPrice * 100).toFixed(0) %>¢</td>
       <td><%= (s.modelProb * 100).toFixed(1) %>%</td>

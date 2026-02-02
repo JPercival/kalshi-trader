@@ -32,7 +32,7 @@
 export function detectMispricings(db, { minEdgePct = 5, minConfidence = 0.6, minLiquidity = 0, coinFlipMin = 0.40, coinFlipMax = 0.60 }) {
   // Get active markets in the "coin flip" zone — where the market is genuinely uncertain
   const markets = db.prepare(`
-    SELECT m.ticker, m.event_ticker, m.title, m.category, m.last_yes_price, m.status
+    SELECT m.ticker, m.event_ticker, m.series_ticker, m.title, m.category, m.last_yes_price, m.status
     FROM markets m
     WHERE m.status = 'active' AND m.last_yes_price IS NOT NULL
       AND m.last_yes_price >= ? AND m.last_yes_price <= ?
@@ -68,6 +68,7 @@ export function detectMispricings(db, { minEdgePct = 5, minConfidence = 0.6, min
       signals.push({
         ticker: market.ticker,
         eventTicker: market.event_ticker,
+        seriesTicker: market.series_ticker,
         title: market.title,
         category: market.category,
         marketPrice: market.last_yes_price,
