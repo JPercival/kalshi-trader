@@ -44,7 +44,6 @@ export function loadConfig(env) {
     skipAuth: env.AUTH_BYPASS === 'true',
 
     // Web dashboard
-    baseUrl: env.BASE_URL || '',
     port: parseInt(env.PORT || '3001', 10),
   };
 
