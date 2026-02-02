@@ -150,15 +150,22 @@ export function setupAuth(app, config) {
   });
 
   /** Initiate Google OAuth */
-  app.get('/auth/google', passport.authenticate('google', {
-    scope: ['profile', 'email'],
-  }));
+  app.get('/auth/google', (req, res, next) => {
+    if (!config.googleClientId || !config.googleClientSecret) {
+      return res.redirect('/login?error=oauth_not_configured');
+    }
+    passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+  });
 
   /** Google OAuth callback */
-  app.get('/auth/google/callback',
-    passport.authenticate('google', { failureRedirect: '/login?error=auth_failed' }),
-    handleOAuthCallback,
-  );
+  app.get('/auth/google/callback', (req, res, next) => {
+    if (!config.googleClientId || !config.googleClientSecret) {
+      return res.redirect('/login?error=oauth_not_configured');
+    }
+    passport.authenticate('google', { failureRedirect: '/login?error=auth_failed' })(req, res, () => {
+      handleOAuthCallback(req, res);
+    });
+  });
 
   /** Logout */
   app.get('/logout', handleLogout);
