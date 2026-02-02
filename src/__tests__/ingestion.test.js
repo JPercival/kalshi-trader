@@ -61,7 +61,7 @@ describe('upsertMarkets', () => {
         close_time: '2026-02-03T00:00:00Z',
         expiration_time: '2026-02-04T00:00:00Z',
         result: null,
-        last_price: 0.65,
+        last_price: 65,
       },
     ]);
 
@@ -76,11 +76,11 @@ describe('upsertMarkets', () => {
     const { db } = handle;
 
     upsertMarkets(db, [
-      { ticker: 'MKT-2', title: 'Original', status: 'open', last_price: 0.5 },
+      { ticker: 'MKT-2', title: 'Original', status: 'open', last_price: 50 },
     ]);
 
     upsertMarkets(db, [
-      { ticker: 'MKT-2', title: 'Updated', status: 'closed', last_price: 0.75 },
+      { ticker: 'MKT-2', title: 'Updated', status: 'closed', last_price: 75 },
     ]);
 
     const row = db.prepare('SELECT * FROM markets WHERE ticker = ?').get('MKT-2');
@@ -93,11 +93,11 @@ describe('upsertMarkets', () => {
     const { db } = handle;
 
     upsertMarkets(db, [
-      { ticker: 'MKT-3', category: 'economics', status: 'open', last_price: 0.5 },
+      { ticker: 'MKT-3', category: 'economics', status: 'open', last_price: 50 },
     ]);
 
     upsertMarkets(db, [
-      { ticker: 'MKT-3', category: null, status: 'open', last_price: 0.5 },
+      { ticker: 'MKT-3', category: null, status: 'open', last_price: 50 },
     ]);
 
     const row = db.prepare('SELECT * FROM markets WHERE ticker = ?').get('MKT-3');
@@ -108,11 +108,11 @@ describe('upsertMarkets', () => {
     const { db } = handle;
 
     upsertMarkets(db, [
-      { ticker: 'MKT-4', status: 'settled', result: 'yes', last_price: 1.0 },
+      { ticker: 'MKT-4', status: 'settled', result: 'yes', last_price: 100 },
     ]);
 
     upsertMarkets(db, [
-      { ticker: 'MKT-4', status: 'settled', result: null, last_price: 1.0 },
+      { ticker: 'MKT-4', status: 'settled', result: null, last_price: 100 },
     ]);
 
     const row = db.prepare('SELECT * FROM markets WHERE ticker = ?').get('MKT-4');
@@ -125,7 +125,7 @@ describe('upsertMarkets', () => {
       ticker: `BATCH-${i}`,
       title: `Market ${i}`,
       status: 'open',
-      last_price: 0.5,
+      last_price: 50,
     }));
 
     const result = upsertMarkets(db, markets);
@@ -139,7 +139,7 @@ describe('upsertMarkets', () => {
     const { db } = handle;
 
     upsertMarkets(db, [
-      { ticker: 'MKT-5', status: 'open', yes_bid: 0.42 },
+      { ticker: 'MKT-5', status: 'open', yes_bid: 42 },
     ]);
 
     const row = db.prepare('SELECT * FROM markets WHERE ticker = ?').get('MKT-5');
@@ -182,8 +182,8 @@ describe('ingestMarkets', () => {
         {
           event_ticker: 'EVT-1', category: 'Economics', series_ticker: 'SER-1',
           markets: [
-            { ticker: 'ING-1', title: 'CPI Market', status: 'open', last_price: 0.55, volume: 100, open_interest: 50, close_time: soon },
-            { ticker: 'ING-2', title: 'GDP Market', status: 'open', last_price: 0.30, volume: 10, open_interest: 5, close_time: soon },
+            { ticker: 'ING-1', title: 'CPI Market', status: 'open', last_price: 55, volume: 100, open_interest: 50, close_time: soon },
+            { ticker: 'ING-2', title: 'GDP Market', status: 'open', last_price: 30, volume: 10, open_interest: 5, close_time: soon },
           ],
         },
       ],

@@ -60,24 +60,69 @@ export function createApp({ db, config }) {
     let query = "SELECT * FROM markets WHERE status = ?";
     const params = [status];
 
-    if (coinFlip) {
-      query += " AND last_yes_price >= ? AND last_yes_price <= ?";
-      params.push(config.coinFlipMin, config.coinFlipMax);
-    }
-
     if (category) {
       query += " AND category = ?";
       params.push(category);
     }
 
-    query += " ORDER BY last_updated DESC LIMIT 200";
+    query += " ORDER BY event_ticker, last_yes_price DESC";
 
-    const markets = db.prepare(query).all(...params);
+    const allMarkets = db.prepare(query).all(...params);
+
+    // Group by event_ticker
+    const eventMap = new Map();
+    for (const m of allMarkets) {
+      const key = m.event_ticker || m.ticker;
+      if (!eventMap.has(key)) {
+        eventMap.set(key, {
+          event_ticker: m.event_ticker,
+          series_ticker: m.series_ticker,
+          category: m.category,
+          status: m.status,
+          markets: [],
+        });
+      }
+      eventMap.get(key).markets.push(m);
+    }
+
+    // Build event groups with computed properties
+    let events = [];
+    for (const [, ev] of eventMap) {
+      const isMultiOutcome = ev.markets.length > 1;
+      const topPrice = Math.max(...ev.markets.map(m => m.last_yes_price ?? 0));
+      // For multi-outcome: use the event title from the first market's event context
+      // For single: use the market title
+      const title = isMultiOutcome
+        ? (ev.markets[0].title || '').replace(/^Will the |^Will |^What .*\?$/i, '').trim() || ev.markets[0].title
+        : ev.markets[0].title;
+
+      events.push({
+        ...ev,
+        title: ev.markets[0].title,
+        topPrice,
+        isMultiOutcome,
+      });
+    }
+
+    // Apply coin-flip filter: for single-outcome, filter by price; for multi-outcome, filter by top outcome price
+    if (coinFlip) {
+      events = events.filter(ev => {
+        if (ev.isMultiOutcome) {
+          // Include multi-outcome events where the leading outcome is in the coin-flip zone
+          return ev.topPrice >= config.coinFlipMin && ev.topPrice <= config.coinFlipMax;
+        }
+        return ev.markets[0].last_yes_price >= config.coinFlipMin && ev.markets[0].last_yes_price <= config.coinFlipMax;
+      });
+    }
+
+    // Limit to 200 events
+    events = events.slice(0, 200);
+
     const categories = db.prepare(
       "SELECT DISTINCT category FROM markets WHERE category IS NOT NULL ORDER BY category"
     ).all().map(r => r.category);
 
-    res.render('markets', { markets, categories, filters: { category, status, coinFlip }, config });
+    res.render('markets', { events, categories, filters: { category, status, coinFlip }, config });
   });
 
   /** Portfolio view */

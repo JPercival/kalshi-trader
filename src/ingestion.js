@@ -43,7 +43,7 @@ export function upsertMarkets(db, markets) {
         close_time: m.close_time ? new Date(m.close_time).getTime() : null,
         expiration_time: m.expiration_time ? new Date(m.expiration_time).getTime() : null,
         result: m.result || null,
-        last_yes_price: m.last_price ?? m.yes_bid ?? null,
+        last_yes_price: m.last_price != null ? m.last_price / 100 : m.yes_bid != null ? m.yes_bid / 100 : null,
         last_updated: now,
       });
       upserted++;

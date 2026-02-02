@@ -11,22 +11,56 @@
   <a href="/markets<%= filters.category ? '?category=' + filters.category : '' %>" style="color: <%= filters.coinFlip ? '#4f9cf7' : '#8b8fa3' %>;">🎲 Coin Flip (<%= (config.coinFlipMin * 100).toFixed(0) %>–<%= (config.coinFlipMax * 100).toFixed(0) %>¢)</a>
   <a href="/markets?coinFlip=off<%= filters.category ? '&category=' + filters.category : '' %>" style="color: <%= !filters.coinFlip ? '#4f9cf7' : '#8b8fa3' %>;">All Prices</a>
 </div>
-<div class="card">
-  <table>
-    <tr><th>Ticker</th><th>Title</th><th>Category</th><th>Status</th><th>Price</th><th>Result</th></tr>
-    <% markets.forEach(m => { %>
-    <tr>
-      <td><a href="https://kalshi.com/markets/<%= (m.series_ticker || m.event_ticker || m.ticker).toLowerCase() %>/_/<%= (m.event_ticker || m.ticker).toLowerCase() %>" target="_blank" rel="noopener" style="color: #4f9cf7;"><%= m.ticker %></a></td>
-      <td><%= m.title || '—' %></td>
-      <td><%= m.category || '—' %></td>
-      <td><%= m.status %></td>
-      <td><%= m.last_yes_price != null ? (m.last_yes_price * 100).toFixed(0) + '¢' : '—' %></td>
-      <td><%= m.result || '—' %></td>
-    </tr>
-    <% }); %>
-  </table>
-  <% if (markets.length === 0) { %>
-    <p style="color: #8b8fa3; padding: 1rem 0;">No markets found. Run ingestion first.</p>
+
+<% events.forEach(ev => { %>
+  <% const kalshiUrl = 'https://kalshi.com/markets/' + (ev.series_ticker || ev.event_ticker || ev.markets[0].ticker).toLowerCase() + '/_/' + (ev.event_ticker || ev.markets[0].ticker).toLowerCase(); %>
+  <% if (ev.isMultiOutcome) { %>
+    <%/* Multi-outcome event — show as a card with outcome distribution */%>
+    <div class="card" style="margin-bottom: 1rem;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.75rem;">
+        <div>
+          <a href="<%= kalshiUrl %>" target="_blank" rel="noopener" style="color: #4f9cf7; font-weight: 600; font-size: 1.05rem;">
+            <%= ev.markets[0].title || ev.event_ticker %>
+          </a>
+          <span style="color: #8b8fa3; font-size: 0.85rem; margin-left: 0.5rem;"><%= ev.category || '' %></span>
+        </div>
+        <span style="color: #8b8fa3; font-size: 0.85rem;"><%= ev.markets.length %> outcomes</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+        <% ev.markets.forEach(m => { %>
+          <% const pct = m.last_yes_price != null ? (m.last_yes_price * 100) : 0; %>
+          <% const isLeader = pct === ev.topPrice * 100; %>
+          <div style="background: <%= isLeader ? '#1a2744' : '#141821' %>; border: 1px solid <%= isLeader ? '#4f9cf7' : '#2a2d3a' %>; border-radius: 6px; padding: 0.5rem 0.75rem; min-width: 120px; flex: 1; max-width: 200px;">
+            <div style="font-size: 0.85rem; color: #c8cad0; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<%= m.subtitle || m.title || m.ticker %>">
+              <%= m.subtitle || m.title || m.ticker %>
+            </div>
+            <div style="font-size: 1.1rem; font-weight: 600; color: <%= isLeader ? '#4f9cf7' : '#e1e3e8' %>;">
+              <%= pct.toFixed(0) %>¢
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  <% } else { %>
+    <%/* Single-outcome market — simple row */%>
+    <% const m = ev.markets[0]; %>
+    <div class="card" style="margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 1rem;">
+      <div style="display: flex; gap: 1rem; align-items: center; flex: 1; min-width: 0;">
+        <a href="<%= kalshiUrl %>" target="_blank" rel="noopener" style="color: #4f9cf7; white-space: nowrap;"><%= m.ticker %></a>
+        <span style="color: #e1e3e8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><%= m.title || '—' %></span>
+      </div>
+      <div style="display: flex; gap: 1rem; align-items: center; flex-shrink: 0;">
+        <span style="color: #8b8fa3; font-size: 0.85rem;"><%= m.category || '' %></span>
+        <span style="font-weight: 600; color: #e1e3e8; min-width: 50px; text-align: right;"><%= m.last_yes_price != null ? (m.last_yes_price * 100).toFixed(0) + '¢' : '—' %></span>
+      </div>
+    </div>
   <% } %>
-</div>
+<% }); %>
+
+<% if (events.length === 0) { %>
+  <div class="card">
+    <p style="color: #8b8fa3; padding: 1rem 0;">No markets found. Run ingestion first.</p>
+  </div>
+<% } %>
+
 <%- include('footer') %>
