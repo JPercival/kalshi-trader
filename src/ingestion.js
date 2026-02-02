@@ -74,7 +74,9 @@ export function mapStatus(apiStatus) {
  * @param {{ fetchMarkets: Function }} opts.client - Kalshi API client
  * @returns {Promise<{ upserted: number }>}
  */
-export async function ingestMarkets({ db, client }) {
+export async function ingestMarkets({ db, client, logger = console }) {
+  logger.log('[ingest] Fetching open markets from Kalshi...');
   const markets = await client.fetchMarkets({ status: 'open' });
+  logger.log(`[ingest] Fetched ${markets.length} markets, upserting...`);
   return upsertMarkets(db, markets);
 }

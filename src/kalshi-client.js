@@ -81,7 +81,10 @@ export function createKalshiClient({ baseUrl, fetch: fetchFn = globalThis.fetch,
       const events = data.events || [];
       allEvents.push(...events);
       cursor = data.cursor || '';
-      if (cursor && pageDelayMs > 0) await new Promise(r => setTimeout(r, pageDelayMs));
+      if (cursor) {
+        console.log(`[kalshi] Fetched ${allEvents.length} events so far, next page...`);
+        if (pageDelayMs > 0) await new Promise(r => setTimeout(r, pageDelayMs));
+      }
     } while (cursor);
 
     return allEvents;
@@ -116,7 +119,10 @@ export function createKalshiClient({ baseUrl, fetch: fetchFn = globalThis.fetch,
       const markets = data.markets || [];
       allMarkets.push(...markets);
       cursor = data.cursor || '';
-      if (cursor && pageDelayMs > 0) await new Promise(r => setTimeout(r, pageDelayMs));
+      if (cursor) {
+        console.log(`[kalshi] Fetched ${allMarkets.length} markets so far, next page...`);
+        if (pageDelayMs > 0) await new Promise(r => setTimeout(r, pageDelayMs));
+      }
     } while (cursor);
 
     return allMarkets;
