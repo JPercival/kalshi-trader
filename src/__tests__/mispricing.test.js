@@ -44,8 +44,8 @@ describe('detectMispricings', () => {
   it('detects a no-side mispricing', () => {
     const { db } = handle;
 
-    seedMarket(db, 'MKT-2', 0.65);
-    seedEstimate(db, 'MKT-2', 'economics', 0.35, 0.75);
+    seedMarket(db, 'MKT-2', 0.55);
+    seedEstimate(db, 'MKT-2', 'economics', 0.25, 0.75);
 
     const signals = detectMispricings(db, { minEdgePct: 5, minConfidence: 0.6, minLiquidity: 0 });
 
@@ -103,11 +103,11 @@ describe('detectMispricings', () => {
   it('sorts by score descending', () => {
     const { db } = handle;
 
-    seedMarket(db, 'MKT-A', 0.35);
-    seedEstimate(db, 'MKT-A', 'model1', 0.65, 0.7); // edge=0.3, score=0.3*0.7=0.21
+    seedMarket(db, 'MKT-A', 0.45);
+    seedEstimate(db, 'MKT-A', 'model1', 0.75, 0.7); // edge=0.3, score=0.3*0.7=0.21
 
-    seedMarket(db, 'MKT-B', 0.30);
-    seedEstimate(db, 'MKT-B', 'model2', 0.70, 0.9); // edge=0.4, score=0.4*0.9=0.36
+    seedMarket(db, 'MKT-B', 0.40);
+    seedEstimate(db, 'MKT-B', 'model2', 0.80, 0.9); // edge=0.4, score=0.4*0.9=0.36
 
     const signals = detectMispricings(db, { minEdgePct: 5, minConfidence: 0.6, minLiquidity: 0 });
 
@@ -161,7 +161,7 @@ describe('detectMispricings', () => {
     seedMarket(db, 'MKT-WIDE', 0.15);
     seedEstimate(db, 'MKT-WIDE', 'weather', 0.50, 0.85);
 
-    // Default range (0.30-0.70) should exclude it
+    // Default range (0.40-0.60) should exclude it
     const narrow = detectMispricings(db, { minEdgePct: 5, minConfidence: 0.6, minLiquidity: 0 });
     expect(narrow).toHaveLength(0);
 
@@ -174,10 +174,10 @@ describe('detectMispricings', () => {
   it('includes markets at coin-flip boundaries', () => {
     const { db } = handle;
 
-    seedMarket(db, 'MKT-FLOOR', 0.30);
-    seedMarket(db, 'MKT-CEIL', 0.70);
-    seedEstimate(db, 'MKT-FLOOR', 'weather', 0.60, 0.85);
-    seedEstimate(db, 'MKT-CEIL', 'weather', 0.40, 0.85);
+    seedMarket(db, 'MKT-FLOOR', 0.40);
+    seedMarket(db, 'MKT-CEIL', 0.60);
+    seedEstimate(db, 'MKT-FLOOR', 'weather', 0.70, 0.85);
+    seedEstimate(db, 'MKT-CEIL', 'weather', 0.30, 0.85);
 
     const signals = detectMispricings(db, { minEdgePct: 5, minConfidence: 0.6, minLiquidity: 0 });
     expect(signals).toHaveLength(2);
@@ -217,7 +217,7 @@ describe('getTopSignals', () => {
 
     for (let i = 0; i < 20; i++) {
       db.prepare("INSERT INTO markets (ticker, title, status, last_yes_price) VALUES (?, ?, ?, ?)").run(
-        `SIG-${i}`, `Market ${i}`, 'active', 0.30
+        `SIG-${i}`, `Market ${i}`, 'active', 0.45
       );
       db.prepare(
         "INSERT INTO model_estimates (ticker, timestamp, model_name, estimated_prob, confidence) VALUES (?, ?, ?, ?, ?)"

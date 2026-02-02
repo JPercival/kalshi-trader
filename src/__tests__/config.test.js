@@ -16,8 +16,8 @@ describe('loadConfig', () => {
     expect(cfg.maxPositionPct).toBe(5);
     expect(cfg.kellyFraction).toBe(0.25);
     expect(cfg.minLiquidity).toBe(100);
-    expect(cfg.coinFlipMin).toBe(0.30);
-    expect(cfg.coinFlipMax).toBe(0.70);
+    expect(cfg.coinFlipMin).toBe(0.40);
+    expect(cfg.coinFlipMax).toBe(0.60);
     expect(cfg.telegramBotToken).toBe('');
     expect(cfg.telegramChatId).toBe('');
     expect(cfg.googleClientId).toBe('');

@@ -31,8 +31,8 @@ export function loadConfig(env) {
     maxPositionPct: parseFloat(env.MAX_POSITION_PCT || '5'),
     kellyFraction: parseFloat(env.KELLY_FRACTION || '0.25'),
     minLiquidity: parseInt(env.MIN_LIQUIDITY || '100', 10),
-    coinFlipMin: parseFloat(env.COIN_FLIP_MIN || '0.30'),
-    coinFlipMax: parseFloat(env.COIN_FLIP_MAX || '0.70'),
+    coinFlipMin: parseFloat(env.COIN_FLIP_MIN || '0.40'),
+    coinFlipMax: parseFloat(env.COIN_FLIP_MAX || '0.60'),
     maxCloseDays: parseInt(env.MAX_CLOSE_DAYS || '7', 10),
 
     // Telegram alerts
