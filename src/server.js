@@ -9,6 +9,7 @@ import { dirname, join } from 'path';
 import { getTopSignals } from './mispricing.js';
 import { getOpenTrades, getAllTrades, calculateBankroll } from './paper-trader.js';
 import { getPerformanceStats } from './resolution.js';
+import { setupAuth } from './auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -30,7 +31,10 @@ export function createApp({ db, config }) {
   // Static files
   app.use(express.static(join(__dirname, '..', 'public')));
 
-  // --- Pages ---
+  // Auth setup — public routes (/login, /auth/google, /api/health) and middleware
+  setupAuth(app, config);
+
+  // --- Protected Pages (auth required) ---
 
   /** Dashboard home */
   app.get('/', (req, res) => {

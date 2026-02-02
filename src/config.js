@@ -36,6 +36,13 @@ export function loadConfig(env) {
     telegramBotToken: env.TELEGRAM_BOT_TOKEN || '',
     telegramChatId: env.TELEGRAM_CHAT_ID || '',
 
+    // Auth (Google OAuth)
+    googleClientId: env.GOOGLE_CLIENT_ID || '',
+    googleClientSecret: env.GOOGLE_CLIENT_SECRET || '',
+    sessionSecret: env.SESSION_SECRET || 'dev-secret-change-me',
+    allowedEmails: (env.ALLOWED_EMAILS || '').split(',').map(e => e.trim()).filter(Boolean),
+    skipAuth: env.SKIP_AUTH === 'true',
+
     // Web dashboard
     port: parseInt(env.PORT || '3001', 10),
   };

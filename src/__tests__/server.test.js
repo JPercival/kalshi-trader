@@ -20,6 +20,11 @@ describe('createApp', () => {
     minEdgePct: 5,
     minConfidence: 0.6,
     port: 3001,
+    skipAuth: true,
+    sessionSecret: 'test-secret',
+    googleClientId: '',
+    googleClientSecret: '',
+    allowedEmails: [],
   };
 
   beforeEach(() => {

@@ -18,6 +18,11 @@ describe('loadConfig', () => {
     expect(cfg.minLiquidity).toBe(100);
     expect(cfg.telegramBotToken).toBe('');
     expect(cfg.telegramChatId).toBe('');
+    expect(cfg.googleClientId).toBe('');
+    expect(cfg.googleClientSecret).toBe('');
+    expect(cfg.sessionSecret).toBe('dev-secret-change-me');
+    expect(cfg.allowedEmails).toEqual([]);
+    expect(cfg.skipAuth).toBe(false);
     expect(cfg.port).toBe(3001);
   });
 
@@ -36,6 +41,11 @@ describe('loadConfig', () => {
       MIN_LIQUIDITY: '200',
       TELEGRAM_BOT_TOKEN: 'bot-token',
       TELEGRAM_CHAT_ID: 'chat-123',
+      GOOGLE_CLIENT_ID: 'goog-id',
+      GOOGLE_CLIENT_SECRET: 'goog-secret',
+      SESSION_SECRET: 'my-session-secret',
+      ALLOWED_EMAILS: 'a@b.com,c@d.com',
+      SKIP_AUTH: 'true',
       PORT: '4000',
     };
 
@@ -54,6 +64,11 @@ describe('loadConfig', () => {
     expect(cfg.minLiquidity).toBe(200);
     expect(cfg.telegramBotToken).toBe('bot-token');
     expect(cfg.telegramChatId).toBe('chat-123');
+    expect(cfg.googleClientId).toBe('goog-id');
+    expect(cfg.googleClientSecret).toBe('goog-secret');
+    expect(cfg.sessionSecret).toBe('my-session-secret');
+    expect(cfg.allowedEmails).toEqual(['a@b.com', 'c@d.com']);
+    expect(cfg.skipAuth).toBe(true);
     expect(cfg.port).toBe(4000);
   });
 

@@ -1,9 +1,11 @@
 ---
 id: KAL-21
 title: Google OAuth authentication
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@ros'
 created_date: '2026-02-02 18:45'
+updated_date: '2026-02-02 18:45'
 labels:
   - auth
   - web
@@ -27,3 +29,15 @@ Add Google OAuth 2.0 to protect the dashboard. Use passport.js + passport-google
 - [ ] #5 /api/health remains unauthenticated (for Railway health checks)
 - [ ] #6 100% test coverage on auth middleware and routes
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. Install deps: passport, passport-google-oauth20, express-session
+2. Add auth config vars to config.js
+3. Create src/auth.js with passport setup, middleware, routes
+4. Wire auth into server.js — protect dashboard + API routes, keep /api/health open
+5. Create views/login.ejs
+6. Write comprehensive tests with mocked passport strategies
+7. Verify 100% coverage
+<!-- SECTION:PLAN:END -->
