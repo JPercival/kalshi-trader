@@ -30,7 +30,7 @@
 export function detectMispricings(db, { minEdgePct = 5, minConfidence = 0.6, minLiquidity = 0 }) {
   // Get all active markets with their latest model estimates
   const markets = db.prepare(`
-    SELECT m.ticker, m.title, m.category, m.last_yes_price, m.status
+    SELECT m.ticker, m.event_ticker, m.title, m.category, m.last_yes_price, m.status
     FROM markets m
     WHERE m.status = 'active' AND m.last_yes_price IS NOT NULL
   `).all();
@@ -64,6 +64,7 @@ export function detectMispricings(db, { minEdgePct = 5, minConfidence = 0.6, min
 
       signals.push({
         ticker: market.ticker,
+        eventTicker: market.event_ticker,
         title: market.title,
         category: market.category,
         marketPrice: market.last_yes_price,

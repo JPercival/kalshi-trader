@@ -84,7 +84,7 @@ export function closeTrade(db, tradeId, exitPrice) {
  * @returns {object[]}
  */
 export function getOpenTrades(db) {
-  return db.prepare("SELECT * FROM paper_trades WHERE resolution = 'open' ORDER BY opened_at DESC").all();
+  return db.prepare("SELECT pt.*, m.event_ticker FROM paper_trades pt LEFT JOIN markets m ON pt.ticker = m.ticker WHERE pt.resolution = 'open' ORDER BY pt.opened_at DESC").all();
 }
 
 /**
@@ -95,7 +95,7 @@ export function getOpenTrades(db) {
  * @returns {object[]}
  */
 export function getAllTrades(db, { limit = 100 } = {}) {
-  return db.prepare("SELECT * FROM paper_trades ORDER BY opened_at DESC LIMIT ?").all(limit);
+  return db.prepare("SELECT pt.*, m.event_ticker FROM paper_trades pt LEFT JOIN markets m ON pt.ticker = m.ticker ORDER BY pt.opened_at DESC LIMIT ?").all(limit);
 }
 
 /**
