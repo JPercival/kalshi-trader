@@ -30,7 +30,7 @@ export function configurePassport(config) {
       {
         clientID: config.googleClientId,
         clientSecret: config.googleClientSecret,
-        callbackURL: config.callbackURL || '/auth/google/callback',
+        callbackURL: config.callbackURL || `${config.baseUrl || ''}/auth/google/callback`,
       },
       (accessToken, refreshToken, profile, done) => {
         const email = profile.emails && profile.emails[0] && profile.emails[0].value;
