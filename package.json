@@ -5,8 +5,8 @@
   "description": "Kalshi prediction market paper trader — model-based mispricing detection",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "node --watch src/index.js",
+    "start": "node src/cli.js",
+    "dev": "node --watch src/cli.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

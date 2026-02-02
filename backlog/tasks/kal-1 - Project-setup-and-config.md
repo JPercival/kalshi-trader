@@ -1,9 +1,11 @@
 ---
 id: KAL-1
 title: Project setup and config
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@ros'
 created_date: '2026-02-02 17:49'
+updated_date: '2026-02-02 18:13'
 labels:
   - setup
 dependencies: []
