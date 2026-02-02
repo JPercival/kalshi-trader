@@ -1,9 +1,11 @@
 ---
 id: KAL-8
 title: Economics model (FRED)
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@ros'
 created_date: '2026-02-02 17:49'
+updated_date: '2026-02-02 18:23'
 labels:
   - models
   - economics
