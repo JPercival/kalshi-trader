@@ -1,9 +1,11 @@
 ---
 id: KAL-19
 title: Railway deployment
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@jp'
 created_date: '2026-02-02 17:49'
+updated_date: '2026-02-02 20:36'
 labels:
   - deploy
 dependencies:
@@ -16,3 +18,9 @@ priority: medium
 <!-- SECTION:DESCRIPTION:BEGIN -->
 Procfile, volume mount for SQLite, env vars, health check endpoint. Single service running ingestion + models + web server.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+JP setting up Railway manually
+<!-- SECTION:NOTES:END -->

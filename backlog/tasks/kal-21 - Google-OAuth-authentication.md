@@ -1,11 +1,11 @@
 ---
 id: KAL-21
 title: Google OAuth authentication
-status: In Progress
+status: Done
 assignee:
   - '@ros'
 created_date: '2026-02-02 18:45'
-updated_date: '2026-02-02 18:45'
+updated_date: '2026-02-02 20:36'
 labels:
   - auth
   - web
@@ -41,3 +41,9 @@ Add Google OAuth 2.0 to protect the dashboard. Use passport.js + passport-google
 6. Write comprehensive tests with mocked passport strategies
 7. Verify 100% coverage
 <!-- SECTION:PLAN:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Google OAuth 2.0 via passport.js. ALLOWED_EMAILS whitelist, SKIP_AUTH=true for local dev, /api/health unauthenticated for health checks.
+<!-- SECTION:FINAL_SUMMARY:END -->

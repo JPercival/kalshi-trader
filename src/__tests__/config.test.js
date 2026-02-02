@@ -45,7 +45,7 @@ describe('loadConfig', () => {
       GOOGLE_CLIENT_SECRET: 'goog-secret',
       SESSION_SECRET: 'my-session-secret',
       ALLOWED_EMAILS: 'a@b.com,c@d.com',
-      SKIP_AUTH: 'true',
+      AUTH_BYPASS: 'true',
       PORT: '4000',
     };
 

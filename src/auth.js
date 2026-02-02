@@ -1,7 +1,7 @@
 /**
  * Authentication module.
  * Google OAuth 2.0 via passport.js with session-based auth.
- * Supports SKIP_AUTH=true for local development.
+ * Supports AUTH_BYPASS=true for local development.
  */
 
 import passport from 'passport';
@@ -57,7 +57,7 @@ export function configurePassport(config) {
 
 /**
  * Middleware that requires authentication.
- * If SKIP_AUTH is true, sets a fake dev user and passes through.
+ * If AUTH_BYPASS is true, sets a fake dev user and passes through.
  * Otherwise, checks for an authenticated session.
  * @param {object} config
  * @param {boolean} config.skipAuth

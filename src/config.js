@@ -41,7 +41,7 @@ export function loadConfig(env) {
     googleClientSecret: env.GOOGLE_CLIENT_SECRET || '',
     sessionSecret: env.SESSION_SECRET || 'dev-secret-change-me',
     allowedEmails: (env.ALLOWED_EMAILS || '').split(',').map(e => e.trim()).filter(Boolean),
-    skipAuth: env.SKIP_AUTH === 'true',
+    skipAuth: env.AUTH_BYPASS === 'true',
 
     // Web dashboard
     port: parseInt(env.PORT || '3001', 10),

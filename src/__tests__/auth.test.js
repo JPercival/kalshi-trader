@@ -145,7 +145,7 @@ describe('setupAuth integration', () => {
     app.set('views', new URL('../../views', import.meta.url).pathname);
   });
 
-  describe('with SKIP_AUTH=true', () => {
+  describe('with AUTH_BYPASS=true', () => {
     beforeEach(() => {
       const config = {
         skipAuth: true,
@@ -188,7 +188,7 @@ describe('setupAuth integration', () => {
     });
   });
 
-  describe('with SKIP_AUTH=false (no Google credentials)', () => {
+  describe('with AUTH_BYPASS=false (no Google credentials)', () => {
     beforeEach(() => {
       const config = {
         skipAuth: false,
