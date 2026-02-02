@@ -1,9 +1,11 @@
 ---
 id: KAL-5
 title: Price snapshot tracker
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@ros'
 created_date: '2026-02-02 17:49'
+updated_date: '2026-02-02 18:19'
 labels:
   - api
   - prices
