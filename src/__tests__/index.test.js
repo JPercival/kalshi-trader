@@ -36,13 +36,17 @@ vi.mock('../kalshi-client.js', () => ({
 
 vi.mock('../ingestion.js', () => ({ ingestMarkets: mocks.ingest }));
 vi.mock('../snapshots.js', () => ({ snapshotAllActive: mocks.snapshot }));
-vi.mock('../model-runner.js', () => ({ createModelRunner: vi.fn(() => ({ runAll: mocks.runAll })) }));
+vi.mock('../model-runner.js', () => ({ createModelRunner: vi.fn(() => ({ run: mocks.runAll, register: vi.fn(), getModels: vi.fn(() => [1,2,3,4]) })) }));
+vi.mock('../models/weather.js', () => ({ createWeatherModel: vi.fn(() => ({ name: 'weather' })) }));
+vi.mock('../models/economics.js', () => ({ createEconomicsModel: vi.fn(() => ({ name: 'economics' })) }));
+vi.mock('../models/fed-rates.js', () => ({ createFedRatesModel: vi.fn(() => ({ name: 'fed-rates' })) }));
+vi.mock('../models/base-rate.js', () => ({ createBaseRateModel: vi.fn(() => ({ name: 'base-rate' })) }));
 vi.mock('../mispricing.js', () => ({ detectMispricings: mocks.detect }));
 vi.mock('../paper-trader.js', () => ({ executePaperTrades: mocks.execute, calculateBankroll: mocks.bankroll }));
 vi.mock('../resolution.js', () => ({ resolveSettledTrades: mocks.resolve, updateDailyStats: mocks.updateDaily }));
 vi.mock('../server.js', () => ({ createApp: vi.fn(() => ({ listen: mocks.listen })) }));
 
-import { main } from '../index.js';
+import { main, timing } from '../index.js';
 
 describe('main', () => {
   let origOn;
@@ -52,6 +56,7 @@ describe('main', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     origOn = process.on;
     process.on = vi.fn();
+    timing.delay = vi.fn(() => Promise.resolve());
     // Re-apply mock implementations after clearAllMocks
     mocks.listen.mockImplementation((port, cb) => { if (cb) cb(); return mockServer; });
     mocks.ingest.mockResolvedValue({ upserted: 5, total: 100 });

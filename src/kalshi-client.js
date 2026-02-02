@@ -38,7 +38,23 @@
  * @param {typeof globalThis.fetch} [opts.fetch] - Fetch implementation (for testing)
  * @returns {{ fetchEvents: Function, fetchMarkets: Function, fetchMarket: Function }}
  */
-export function createKalshiClient({ baseUrl, fetch: fetchFn = globalThis.fetch }) {
+export function createKalshiClient({ baseUrl, fetch: fetchFn = globalThis.fetch, maxRetries = 3, retryDelayMs = 2000 }) {
+  /**
+   * Fetch with retry + exponential backoff on 429.
+   */
+  async function fetchWithRetry(url) {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const res = await fetchFn(url);
+      if (res.status === 429 && attempt < maxRetries) {
+        const delay = retryDelayMs * Math.pow(2, attempt);
+        console.warn(`[kalshi] 429 rate limited, retrying in ${delay / 1000}s (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+      return res;
+    }
+  }
+
   /**
    * Fetch events from Kalshi API with cursor-based pagination.
    * @param {object} [params]
@@ -56,7 +72,7 @@ export function createKalshiClient({ baseUrl, fetch: fetchFn = globalThis.fetch 
       url.searchParams.set('limit', String(limit));
       if (cursor) url.searchParams.set('cursor', cursor);
 
-      const res = await fetchFn(url.toString());
+      const res = await fetchWithRetry(url.toString());
       if (!res.ok) {
         throw new Error(`Kalshi API error ${res.status}: ${await res.text()}`);
       }
@@ -90,7 +106,7 @@ export function createKalshiClient({ baseUrl, fetch: fetchFn = globalThis.fetch 
       if (status) url.searchParams.set('status', status);
       if (cursor) url.searchParams.set('cursor', cursor);
 
-      const res = await fetchFn(url.toString());
+      const res = await fetchWithRetry(url.toString());
       if (!res.ok) {
         throw new Error(`Kalshi API error ${res.status}: ${await res.text()}`);
       }
@@ -111,7 +127,7 @@ export function createKalshiClient({ baseUrl, fetch: fetchFn = globalThis.fetch 
    */
   async function fetchMarket(ticker) {
     const url = `${baseUrl}/markets/${encodeURIComponent(ticker)}`;
-    const res = await fetchFn(url);
+    const res = await fetchWithRetry(url);
     if (!res.ok) {
       throw new Error(`Kalshi API error ${res.status}: ${await res.text()}`);
     }

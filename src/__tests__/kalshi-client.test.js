@@ -9,10 +9,30 @@ function mockFetch(responses) {
   let callIndex = 0;
   const fn = async (url) => {
     calls.push(url);
-    const resp = responses[callIndex++] || responses[responses.length - 1];
+    const resp = responses[callIndex] || responses[responses.length - 1];
+    // Only advance index if this isn't the last response (for retry reuse)
+    if (callIndex < responses.length - 1) callIndex++;
+    else if (responses.length > 1 && callIndex < responses.length) callIndex++;
     return {
       ok: resp.ok !== false,
-      status: resp.status || 200,
+      status: resp.status || (resp.ok === false ? 500 : 200),
+      json: async () => resp.json,
+      text: async () => resp.text || JSON.stringify(resp.json),
+    };
+  };
+  fn.calls = calls;
+  return fn;
+}
+
+function mockFetchSequential(responses) {
+  const calls = [];
+  let callIndex = 0;
+  const fn = async (url) => {
+    calls.push(url);
+    const resp = responses[callIndex++];
+    return {
+      ok: resp.ok !== false,
+      status: resp.status || (resp.ok === false ? 500 : 200),
       json: async () => resp.json,
       text: async () => resp.text || JSON.stringify(resp.json),
     };
@@ -29,7 +49,7 @@ describe('createKalshiClient', () => {
       const fetch = mockFetch([
         { json: { events: [{ event_ticker: 'E1' }], cursor: '' } },
       ]);
-      const client = createKalshiClient({ baseUrl, fetch });
+      const client = createKalshiClient({ baseUrl, fetch, maxRetries: 0 });
 
       const events = await client.fetchEvents();
 
@@ -43,7 +63,7 @@ describe('createKalshiClient', () => {
         { json: { events: [{ event_ticker: 'E1' }], cursor: 'page2' } },
         { json: { events: [{ event_ticker: 'E2' }], cursor: '' } },
       ]);
-      const client = createKalshiClient({ baseUrl, fetch });
+      const client = createKalshiClient({ baseUrl, fetch, maxRetries: 0 });
 
       const events = await client.fetchEvents();
 
@@ -58,7 +78,7 @@ describe('createKalshiClient', () => {
       const fetch = mockFetch([
         { ok: false, status: 500, text: 'Internal Server Error' },
       ]);
-      const client = createKalshiClient({ baseUrl, fetch });
+      const client = createKalshiClient({ baseUrl, fetch, maxRetries: 0 });
 
       await expect(client.fetchEvents()).rejects.toThrow('Kalshi API error 500');
     });
@@ -67,7 +87,7 @@ describe('createKalshiClient', () => {
       const fetch = mockFetch([
         { json: { cursor: '' } },
       ]);
-      const client = createKalshiClient({ baseUrl, fetch });
+      const client = createKalshiClient({ baseUrl, fetch, maxRetries: 0 });
 
       const events = await client.fetchEvents();
       expect(events).toEqual([]);
@@ -77,7 +97,7 @@ describe('createKalshiClient', () => {
       const fetch = mockFetch([
         { json: { events: [], cursor: '' } },
       ]);
-      const client = createKalshiClient({ baseUrl, fetch });
+      const client = createKalshiClient({ baseUrl, fetch, maxRetries: 0 });
 
       await client.fetchEvents({ status: 'closed', limit: 50 });
 
@@ -92,7 +112,7 @@ describe('createKalshiClient', () => {
         { json: { markets: [{ ticker: 'M1' }], cursor: 'next' } },
         { json: { markets: [{ ticker: 'M2' }], cursor: '' } },
       ]);
-      const client = createKalshiClient({ baseUrl, fetch });
+      const client = createKalshiClient({ baseUrl, fetch, maxRetries: 0 });
 
       const markets = await client.fetchMarkets();
 
@@ -104,7 +124,7 @@ describe('createKalshiClient', () => {
       const fetch = mockFetch([
         { json: { markets: [], cursor: '' } },
       ]);
-      const client = createKalshiClient({ baseUrl, fetch });
+      const client = createKalshiClient({ baseUrl, fetch, maxRetries: 0 });
 
       await client.fetchMarkets({ eventTicker: 'EV-1', status: 'open' });
 
@@ -116,7 +136,7 @@ describe('createKalshiClient', () => {
       const fetch = mockFetch([
         { ok: false, status: 403, text: 'Forbidden' },
       ]);
-      const client = createKalshiClient({ baseUrl, fetch });
+      const client = createKalshiClient({ baseUrl, fetch, maxRetries: 0 });
 
       await expect(client.fetchMarkets()).rejects.toThrow('Kalshi API error 403');
     });
@@ -125,7 +145,7 @@ describe('createKalshiClient', () => {
       const fetch = mockFetch([
         { json: { markets: [], cursor: '' } },
       ]);
-      const client = createKalshiClient({ baseUrl, fetch });
+      const client = createKalshiClient({ baseUrl, fetch, maxRetries: 0 });
 
       const markets = await client.fetchMarkets();
       expect(markets).toEqual([]);
@@ -135,7 +155,7 @@ describe('createKalshiClient', () => {
       const fetch = mockFetch([
         { json: { cursor: '' } },
       ]);
-      const client = createKalshiClient({ baseUrl, fetch });
+      const client = createKalshiClient({ baseUrl, fetch, maxRetries: 0 });
 
       const markets = await client.fetchMarkets();
       expect(markets).toEqual([]);
@@ -147,7 +167,7 @@ describe('createKalshiClient', () => {
       const fetch = mockFetch([
         { json: { market: { ticker: 'MKT-RAIN', title: 'Will it rain?' } } },
       ]);
-      const client = createKalshiClient({ baseUrl, fetch });
+      const client = createKalshiClient({ baseUrl, fetch, maxRetries: 0 });
 
       const market = await client.fetchMarket('MKT-RAIN');
 
@@ -159,9 +179,38 @@ describe('createKalshiClient', () => {
       const fetch = mockFetch([
         { ok: false, status: 404, text: 'Not Found' },
       ]);
-      const client = createKalshiClient({ baseUrl, fetch });
+      const client = createKalshiClient({ baseUrl, fetch, maxRetries: 0 });
 
       await expect(client.fetchMarket('NONEXIST')).rejects.toThrow('Kalshi API error 404');
+    });
+  });
+
+  describe('retry on 429', () => {
+    it('retries on 429 and succeeds', async () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const fetch = mockFetchSequential([
+        { ok: false, status: 429, text: '{"error":{"message":"too many requests"}}' },
+        { json: { market: { ticker: 'M1' } } },
+      ]);
+      const client = createKalshiClient({ baseUrl, fetch, maxRetries: 1, retryDelayMs: 0 });
+
+      const market = await client.fetchMarket('M1');
+
+      expect(market.ticker).toBe('M1');
+      expect(fetch.calls).toHaveLength(2);
+      vi.restoreAllMocks();
+    });
+
+    it('throws after exhausting retries on 429', async () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const fetch = mockFetchSequential([
+        { ok: false, status: 429, text: 'rate limited' },
+        { ok: false, status: 429, text: 'rate limited' },
+      ]);
+      const client = createKalshiClient({ baseUrl, fetch, maxRetries: 1, retryDelayMs: 0 });
+
+      await expect(client.fetchMarket('M1')).rejects.toThrow('Kalshi API error 429');
+      vi.restoreAllMocks();
     });
   });
 });

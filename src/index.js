@@ -4,10 +4,17 @@ import { createKalshiClient } from './kalshi-client.js';
 import { ingestMarkets } from './ingestion.js';
 import { snapshotAllActive } from './snapshots.js';
 import { createModelRunner } from './model-runner.js';
+import { createWeatherModel } from './models/weather.js';
+import { createEconomicsModel } from './models/economics.js';
+import { createFedRatesModel } from './models/fed-rates.js';
+import { createBaseRateModel } from './models/base-rate.js';
 import { detectMispricings } from './mispricing.js';
 import { executePaperTrades, calculateBankroll } from './paper-trader.js';
 import { resolveSettledTrades, updateDailyStats } from './resolution.js';
 import { createApp } from './server.js';
+
+/** @type {{ fn: (ms: number) => Promise<void> }} */
+export const timing = { delay: (ms) => new Promise(r => setTimeout(r, ms)) };
 
 /**
  * Main entry point for the Kalshi Paper Trader.
@@ -32,6 +39,11 @@ export async function main() {
 
   // --- Model runner ---
   const modelRunner = createModelRunner({ db, config });
+  modelRunner.register(createWeatherModel());
+  modelRunner.register(createEconomicsModel({ apiKey: config.fredApiKey }));
+  modelRunner.register(createFedRatesModel({ apiKey: config.fredApiKey }));
+  modelRunner.register(createBaseRateModel());
+  console.log(`[kalshi-trader] Registered ${modelRunner.getModels().length} probability models`);
 
   // --- Polling loop ---
   let running = true;
@@ -63,7 +75,7 @@ export async function main() {
   async function modelCycle() {
     try {
       // 1. Run probability models
-      const estimates = await modelRunner.runAll();
+      const estimates = await modelRunner.run();
       console.log(`[models] Generated ${estimates.length} estimates`);
 
       // 2. Detect mispricings
@@ -89,8 +101,9 @@ export async function main() {
     }
   }
 
-  // Run first cycles immediately
+  // Run first poll, then brief pause before models to avoid rate limiting
   await pollCycle();
+  await timing.delay(5000);
   await modelCycle();
 
   // Set up intervals
