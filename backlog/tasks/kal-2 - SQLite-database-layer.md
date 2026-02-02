@@ -1,9 +1,11 @@
 ---
 id: KAL-2
 title: SQLite database layer
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@ros'
 created_date: '2026-02-02 17:49'
+updated_date: '2026-02-02 18:15'
 labels:
   - database
 dependencies:
