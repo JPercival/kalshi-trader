@@ -174,8 +174,8 @@ describe('ingestMarkets', () => {
     const { db } = handle;
     const mockClient = {
       fetchMarkets: async () => [
-        { ticker: 'ING-1', title: 'Test Market', status: 'open', last_price: 0.55 },
-        { ticker: 'ING-2', title: 'Another Market', status: 'open', last_price: 0.30 },
+        { ticker: 'ING-1', title: 'Test Market', status: 'open', last_price: 0.55, volume: 100, open_interest: 50 },
+        { ticker: 'ING-2', title: 'Another Market', status: 'open', last_price: 0.30, volume: 10, open_interest: 5 },
       ],
     };
 

@@ -74,9 +74,20 @@ export function mapStatus(apiStatus) {
  * @param {{ fetchMarkets: Function }} opts.client - Kalshi API client
  * @returns {Promise<{ upserted: number }>}
  */
-export async function ingestMarkets({ db, client, logger = console }) {
+/**
+ * Ingest markets from Kalshi API.
+ * Filters out zero-activity markets (no volume and no open interest) to skip
+ * the thousands of provisional/empty sports parlays.
+ * @param {object} opts
+ * @param {import('better-sqlite3').Database} opts.db
+ * @param {object} opts.client - Kalshi API client
+ * @param {number} [opts.minVolume] - Minimum volume OR open_interest to include (default 1)
+ * @param {object} [opts.logger]
+ */
+export async function ingestMarkets({ db, client, minVolume = 1, logger = console }) {
   logger.log('[ingest] Fetching open markets from Kalshi...');
-  const markets = await client.fetchMarkets({ status: 'open' });
-  logger.log(`[ingest] Fetched ${markets.length} markets, upserting...`);
+  const allMarkets = await client.fetchMarkets({ status: 'open' });
+  const markets = allMarkets.filter(m => (m.volume || 0) >= minVolume || (m.open_interest || 0) >= minVolume);
+  logger.log(`[ingest] Fetched ${allMarkets.length} total, ${markets.length} with activity (volume or OI >= ${minVolume}), upserting...`);
   return upsertMarkets(db, markets);
 }
