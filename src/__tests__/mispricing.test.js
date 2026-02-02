@@ -44,8 +44,8 @@ describe('detectMispricings', () => {
   it('detects a no-side mispricing', () => {
     const { db } = handle;
 
-    seedMarket(db, 'MKT-2', 0.80);
-    seedEstimate(db, 'MKT-2', 'economics', 0.50, 0.75);
+    seedMarket(db, 'MKT-2', 0.65);
+    seedEstimate(db, 'MKT-2', 'economics', 0.35, 0.75);
 
     const signals = detectMispricings(db, { minEdgePct: 5, minConfidence: 0.6, minLiquidity: 0 });
 
@@ -103,11 +103,11 @@ describe('detectMispricings', () => {
   it('sorts by score descending', () => {
     const { db } = handle;
 
-    seedMarket(db, 'MKT-A', 0.30);
-    seedEstimate(db, 'MKT-A', 'model1', 0.60, 0.7); // edge=0.3, score=0.3*0.7=0.21
+    seedMarket(db, 'MKT-A', 0.35);
+    seedEstimate(db, 'MKT-A', 'model1', 0.65, 0.7); // edge=0.3, score=0.3*0.7=0.21
 
-    seedMarket(db, 'MKT-B', 0.20);
-    seedEstimate(db, 'MKT-B', 'model2', 0.70, 0.9); // edge=0.5, score=0.5*0.9=0.45
+    seedMarket(db, 'MKT-B', 0.30);
+    seedEstimate(db, 'MKT-B', 'model2', 0.70, 0.9); // edge=0.4, score=0.4*0.9=0.36
 
     const signals = detectMispricings(db, { minEdgePct: 5, minConfidence: 0.6, minLiquidity: 0 });
 
@@ -137,6 +137,50 @@ describe('detectMispricings', () => {
 
     const signals = detectMispricings(db, { minEdgePct: 5, minConfidence: 0.6, minLiquidity: 0 });
     expect(signals).toHaveLength(0);
+  });
+
+  it('filters markets outside coin-flip zone by default', () => {
+    const { db } = handle;
+
+    seedMarket(db, 'MKT-LOW', 0.10);  // Too cheap
+    seedMarket(db, 'MKT-HIGH', 0.90); // Too expensive
+    seedMarket(db, 'MKT-MID', 0.50);  // Coin flip
+    seedEstimate(db, 'MKT-LOW', 'weather', 0.40, 0.85);
+    seedEstimate(db, 'MKT-HIGH', 'weather', 0.60, 0.85);
+    seedEstimate(db, 'MKT-MID', 'weather', 0.70, 0.85);
+
+    const signals = detectMispricings(db, { minEdgePct: 5, minConfidence: 0.6, minLiquidity: 0 });
+
+    expect(signals).toHaveLength(1);
+    expect(signals[0].ticker).toBe('MKT-MID');
+  });
+
+  it('respects custom coin-flip range', () => {
+    const { db } = handle;
+
+    seedMarket(db, 'MKT-WIDE', 0.15);
+    seedEstimate(db, 'MKT-WIDE', 'weather', 0.50, 0.85);
+
+    // Default range (0.30-0.70) should exclude it
+    const narrow = detectMispricings(db, { minEdgePct: 5, minConfidence: 0.6, minLiquidity: 0 });
+    expect(narrow).toHaveLength(0);
+
+    // Wider range should include it
+    const wide = detectMispricings(db, { minEdgePct: 5, minConfidence: 0.6, minLiquidity: 0, coinFlipMin: 0.10, coinFlipMax: 0.90 });
+    expect(wide).toHaveLength(1);
+    expect(wide[0].ticker).toBe('MKT-WIDE');
+  });
+
+  it('includes markets at coin-flip boundaries', () => {
+    const { db } = handle;
+
+    seedMarket(db, 'MKT-FLOOR', 0.30);
+    seedMarket(db, 'MKT-CEIL', 0.70);
+    seedEstimate(db, 'MKT-FLOOR', 'weather', 0.60, 0.85);
+    seedEstimate(db, 'MKT-CEIL', 'weather', 0.40, 0.85);
+
+    const signals = detectMispricings(db, { minEdgePct: 5, minConfidence: 0.6, minLiquidity: 0 });
+    expect(signals).toHaveLength(2);
   });
 
   it('returns empty array when no markets exist', () => {

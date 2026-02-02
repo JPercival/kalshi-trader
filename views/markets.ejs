@@ -1,11 +1,15 @@
 <%- include('header') %>
 <h1>Markets</h1>
-<div class="card" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center;">
-  <span style="color: #8b8fa3;">Filter:</span>
-  <a href="/markets" style="color: <%= !filters.category ? '#4f9cf7' : '#8b8fa3' %>;">All</a>
+<div class="card" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+  <span style="color: #8b8fa3;">Category:</span>
+  <a href="/markets<%= filters.coinFlip ? '' : '?coinFlip=off' %>" style="color: <%= !filters.category ? '#4f9cf7' : '#8b8fa3' %>;">All</a>
   <% categories.forEach(cat => { %>
-    <a href="/markets?category=<%= cat %>" style="color: <%= filters.category === cat ? '#4f9cf7' : '#8b8fa3' %>;"><%= cat %></a>
+    <a href="/markets?category=<%= cat %><%= filters.coinFlip ? '' : '&coinFlip=off' %>" style="color: <%= filters.category === cat ? '#4f9cf7' : '#8b8fa3' %>;"><%= cat %></a>
   <% }); %>
+  <span style="color: #333; margin-left: 0.5rem;">|</span>
+  <span style="color: #8b8fa3;">Price:</span>
+  <a href="/markets<%= filters.category ? '?category=' + filters.category : '' %>" style="color: <%= filters.coinFlip ? '#4f9cf7' : '#8b8fa3' %>;">🎲 Coin Flip (<%= (config.coinFlipMin * 100).toFixed(0) %>–<%= (config.coinFlipMax * 100).toFixed(0) %>¢)</a>
+  <a href="/markets?coinFlip=off<%= filters.category ? '&category=' + filters.category : '' %>" style="color: <%= !filters.coinFlip ? '#4f9cf7' : '#8b8fa3' %>;">All Prices</a>
 </div>
 <div class="card">
   <table>

@@ -16,6 +16,8 @@ describe('loadConfig', () => {
     expect(cfg.maxPositionPct).toBe(5);
     expect(cfg.kellyFraction).toBe(0.25);
     expect(cfg.minLiquidity).toBe(100);
+    expect(cfg.coinFlipMin).toBe(0.30);
+    expect(cfg.coinFlipMax).toBe(0.70);
     expect(cfg.telegramBotToken).toBe('');
     expect(cfg.telegramChatId).toBe('');
     expect(cfg.googleClientId).toBe('');
@@ -39,6 +41,8 @@ describe('loadConfig', () => {
       MAX_POSITION_PCT: '3',
       KELLY_FRACTION: '0.5',
       MIN_LIQUIDITY: '200',
+      COIN_FLIP_MIN: '0.35',
+      COIN_FLIP_MAX: '0.65',
       TELEGRAM_BOT_TOKEN: 'bot-token',
       TELEGRAM_CHAT_ID: 'chat-123',
       GOOGLE_CLIENT_ID: 'goog-id',
@@ -62,6 +66,8 @@ describe('loadConfig', () => {
     expect(cfg.maxPositionPct).toBe(3);
     expect(cfg.kellyFraction).toBe(0.5);
     expect(cfg.minLiquidity).toBe(200);
+    expect(cfg.coinFlipMin).toBe(0.35);
+    expect(cfg.coinFlipMax).toBe(0.65);
     expect(cfg.telegramBotToken).toBe('bot-token');
     expect(cfg.telegramChatId).toBe('chat-123');
     expect(cfg.googleClientId).toBe('goog-id');

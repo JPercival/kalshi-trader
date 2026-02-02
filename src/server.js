@@ -43,6 +43,8 @@ export function createApp({ db, config }) {
       limit: 10,
       minEdgePct: config.minEdgePct,
       minConfidence: config.minConfidence,
+      coinFlipMin: config.coinFlipMin,
+      coinFlipMax: config.coinFlipMax,
     });
     const bankroll = calculateBankroll(db, config.paperBankroll);
 
@@ -53,9 +55,15 @@ export function createApp({ db, config }) {
   app.get('/markets', (req, res) => {
     const category = req.query.category || null;
     const status = req.query.status || 'active';
+    const coinFlip = req.query.coinFlip !== 'off';
 
     let query = "SELECT * FROM markets WHERE status = ?";
     const params = [status];
+
+    if (coinFlip) {
+      query += " AND last_yes_price >= ? AND last_yes_price <= ?";
+      params.push(config.coinFlipMin, config.coinFlipMax);
+    }
 
     if (category) {
       query += " AND category = ?";
@@ -69,7 +77,7 @@ export function createApp({ db, config }) {
       "SELECT DISTINCT category FROM markets WHERE category IS NOT NULL ORDER BY category"
     ).all().map(r => r.category);
 
-    res.render('markets', { markets, categories, filters: { category, status } });
+    res.render('markets', { markets, categories, filters: { category, status, coinFlip }, config });
   });
 
   /** Portfolio view */
@@ -103,6 +111,8 @@ export function createApp({ db, config }) {
       limit: parseInt(req.query.limit || '20', 10),
       minEdgePct: parseFloat(req.query.minEdge || String(config.minEdgePct)),
       minConfidence: parseFloat(req.query.minConfidence || String(config.minConfidence)),
+      coinFlipMin: parseFloat(req.query.coinFlipMin || String(config.coinFlipMin)),
+      coinFlipMax: parseFloat(req.query.coinFlipMax || String(config.coinFlipMax)),
     });
     res.json(signals);
   });

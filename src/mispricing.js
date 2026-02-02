@@ -25,15 +25,18 @@
  * @param {number} opts.minEdgePct - Minimum |edge| in percentage points
  * @param {number} opts.minConfidence - Minimum model confidence
  * @param {number} opts.minLiquidity - Minimum open interest (if data available)
+ * @param {number} [opts.coinFlipMin] - Min price for coin-flip zone (default 0.30)
+ * @param {number} [opts.coinFlipMax] - Max price for coin-flip zone (default 0.70)
  * @returns {MispricingSignal[]}
  */
-export function detectMispricings(db, { minEdgePct = 5, minConfidence = 0.6, minLiquidity = 0 }) {
-  // Get all active markets with their latest model estimates
+export function detectMispricings(db, { minEdgePct = 5, minConfidence = 0.6, minLiquidity = 0, coinFlipMin = 0.30, coinFlipMax = 0.70 }) {
+  // Get active markets in the "coin flip" zone — where the market is genuinely uncertain
   const markets = db.prepare(`
     SELECT m.ticker, m.event_ticker, m.title, m.category, m.last_yes_price, m.status
     FROM markets m
     WHERE m.status = 'active' AND m.last_yes_price IS NOT NULL
-  `).all();
+      AND m.last_yes_price >= ? AND m.last_yes_price <= ?
+  `).all(coinFlipMin, coinFlipMax);
 
   const signals = [];
 
@@ -93,9 +96,11 @@ export function detectMispricings(db, { minEdgePct = 5, minConfidence = 0.6, min
  * @param {number} [opts.minEdgePct]
  * @param {number} [opts.minConfidence]
  * @param {number} [opts.minLiquidity]
+ * @param {number} [opts.coinFlipMin]
+ * @param {number} [opts.coinFlipMax]
  * @returns {MispricingSignal[]}
  */
-export function getTopSignals(db, { limit = 10, minEdgePct = 5, minConfidence = 0.6, minLiquidity = 0 } = {}) {
-  const all = detectMispricings(db, { minEdgePct, minConfidence, minLiquidity });
+export function getTopSignals(db, { limit = 10, minEdgePct = 5, minConfidence = 0.6, minLiquidity = 0, coinFlipMin = 0.30, coinFlipMax = 0.70 } = {}) {
+  const all = detectMispricings(db, { minEdgePct, minConfidence, minLiquidity, coinFlipMin, coinFlipMax });
   return all.slice(0, limit);
 }

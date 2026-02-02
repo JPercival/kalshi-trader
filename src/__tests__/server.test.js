@@ -19,6 +19,8 @@ describe('createApp', () => {
     paperBankroll: 500,
     minEdgePct: 5,
     minConfidence: 0.6,
+    coinFlipMin: 0.30,
+    coinFlipMax: 0.70,
     port: 3001,
     skipAuth: true,
     sessionSecret: 'test-secret',
