@@ -1,9 +1,11 @@
 ---
 id: KAL-12
 title: Position sizer (Quarter-Kelly)
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@ros'
 created_date: '2026-02-02 17:49'
+updated_date: '2026-02-02 18:28'
 labels:
   - engine
   - trading
