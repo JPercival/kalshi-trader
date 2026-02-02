@@ -1,0 +1,28 @@
+<%- include('header') %>
+<h1>Markets</h1>
+<div class="card" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center;">
+  <span style="color: #8b8fa3;">Filter:</span>
+  <a href="/markets" style="color: <%= !filters.category ? '#4f9cf7' : '#8b8fa3' %>;">All</a>
+  <% categories.forEach(cat => { %>
+    <a href="/markets?category=<%= cat %>" style="color: <%= filters.category === cat ? '#4f9cf7' : '#8b8fa3' %>;"><%= cat %></a>
+  <% }); %>
+</div>
+<div class="card">
+  <table>
+    <tr><th>Ticker</th><th>Title</th><th>Category</th><th>Status</th><th>Price</th><th>Result</th></tr>
+    <% markets.forEach(m => { %>
+    <tr>
+      <td><%= m.ticker %></td>
+      <td><%= m.title || '—' %></td>
+      <td><%= m.category || '—' %></td>
+      <td><%= m.status %></td>
+      <td><%= m.last_yes_price != null ? (m.last_yes_price * 100).toFixed(0) + '¢' : '—' %></td>
+      <td><%= m.result || '—' %></td>
+    </tr>
+    <% }); %>
+  </table>
+  <% if (markets.length === 0) { %>
+    <p style="color: #8b8fa3; padding: 1rem 0;">No markets found. Run ingestion first.</p>
+  <% } %>
+</div>
+<%- include('footer') %>

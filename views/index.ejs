@@ -1,0 +1,50 @@
+<%- include('header') %>
+<h1>Dashboard</h1>
+<div class="stat-grid">
+  <div class="card stat-card">
+    <div class="stat-value <%= bankroll.totalValue >= config.paperBankroll ? 'positive' : 'negative' %>">$<%= bankroll.totalValue.toFixed(2) %></div>
+    <div class="stat-label">Total Value</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-value">$<%= bankroll.available.toFixed(2) %></div>
+    <div class="stat-label">Available</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-value <%= stats.totalPnl >= 0 ? 'positive' : 'negative' %>">$<%= stats.totalPnl.toFixed(2) %></div>
+    <div class="stat-label">Realized P&L</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-value"><%= stats.winRate.toFixed(1) %>%</div>
+    <div class="stat-label">Win Rate (<%= stats.resolvedTrades %> trades)</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-value"><%= stats.openTrades %></div>
+    <div class="stat-label">Open Positions</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-value"><%= stats.totalTrades %></div>
+    <div class="stat-label">Total Trades</div>
+  </div>
+</div>
+<h2>Top Mispricing Signals</h2>
+<div class="card">
+<% if (signals.length === 0) { %>
+  <p style="color: #8b8fa3;">No signals detected. Markets may need ingestion and model runs.</p>
+<% } else { %>
+  <table>
+    <tr><th>Market</th><th>Category</th><th>Market Price</th><th>Model Prob</th><th>Edge</th><th>Side</th><th>Score</th></tr>
+    <% signals.forEach(s => { %>
+    <tr>
+      <td><%= s.ticker %></td>
+      <td><%= s.category %></td>
+      <td><%= (s.marketPrice * 100).toFixed(0) %>¢</td>
+      <td><%= (s.modelProb * 100).toFixed(1) %>%</td>
+      <td class="<%= s.edge >= 0 ? 'positive' : 'negative' %>"><%= (s.edge * 100).toFixed(1) %>%</td>
+      <td><span class="badge badge-<%= s.side %>"><%= s.side.toUpperCase() %></span></td>
+      <td><%= s.score.toFixed(3) %></td>
+    </tr>
+    <% }); %>
+  </table>
+<% } %>
+</div>
+<%- include('footer') %>

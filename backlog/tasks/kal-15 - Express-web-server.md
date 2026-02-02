@@ -1,9 +1,11 @@
 ---
 id: KAL-15
 title: Express web server
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@ros'
 created_date: '2026-02-02 17:49'
+updated_date: '2026-02-02 18:32'
 labels:
   - web
   - dashboard

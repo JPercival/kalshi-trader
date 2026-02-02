@@ -1,0 +1,58 @@
+<%- include('header') %>
+<h1>Portfolio</h1>
+<div class="stat-grid">
+  <div class="card stat-card">
+    <div class="stat-value">$<%= bankroll.available.toFixed(2) %></div>
+    <div class="stat-label">Available Cash</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-value">$<%= bankroll.invested.toFixed(2) %></div>
+    <div class="stat-label">Invested</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-value <%= bankroll.realizedPnl >= 0 ? 'positive' : 'negative' %>">$<%= bankroll.realizedPnl.toFixed(2) %></div>
+    <div class="stat-label">Realized P&L</div>
+  </div>
+</div>
+<h2>Open Positions (<%= openTrades.length %>)</h2>
+<div class="card">
+<% if (openTrades.length === 0) { %>
+  <p style="color: #8b8fa3;">No open positions.</p>
+<% } else { %>
+  <table>
+    <tr><th>Ticker</th><th>Side</th><th>Entry</th><th>Contracts</th><th>Cost</th><th>Edge</th></tr>
+    <% openTrades.forEach(t => { %>
+    <tr>
+      <td><%= t.ticker %></td>
+      <td><span class="badge badge-<%= t.side %>"><%= t.side.toUpperCase() %></span></td>
+      <td><%= (t.entry_price * 100).toFixed(0) %>¢</td>
+      <td><%= t.contracts %></td>
+      <td>$<%= t.cost_basis.toFixed(2) %></td>
+      <td><%= t.model_edge != null ? (t.model_edge * 100).toFixed(1) + '%' : '—' %></td>
+    </tr>
+    <% }); %>
+  </table>
+<% } %>
+</div>
+<h2>Trade History</h2>
+<div class="card">
+<% if (allTrades.length === 0) { %>
+  <p style="color: #8b8fa3;">No trades yet.</p>
+<% } else { %>
+  <table>
+    <tr><th>Ticker</th><th>Side</th><th>Entry</th><th>Exit</th><th>Qty</th><th>P&L</th><th>Status</th></tr>
+    <% allTrades.forEach(t => { %>
+    <tr>
+      <td><%= t.ticker %></td>
+      <td><span class="badge badge-<%= t.side %>"><%= t.side.toUpperCase() %></span></td>
+      <td><%= (t.entry_price * 100).toFixed(0) %>¢</td>
+      <td><%= t.exit_price != null ? (t.exit_price * 100).toFixed(0) + '¢' : '—' %></td>
+      <td><%= t.contracts %></td>
+      <td class="<%= t.profit > 0 ? 'positive' : t.profit < 0 ? 'negative' : '' %>"><%= t.profit != null ? '$' + t.profit.toFixed(2) : '—' %></td>
+      <td><span class="badge badge-<%= t.resolution === 'open' ? 'open' : t.resolution === 'win' ? 'yes' : 'no' %>"><%= t.resolution %></span></td>
+    </tr>
+    <% }); %>
+  </table>
+<% } %>
+</div>
+<%- include('footer') %>

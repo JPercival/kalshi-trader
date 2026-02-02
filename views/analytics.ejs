@@ -1,0 +1,60 @@
+<%- include('header') %>
+<h1>Analytics</h1>
+<div class="stat-grid">
+  <div class="card stat-card">
+    <div class="stat-value"><%= stats.winRate.toFixed(1) %>%</div>
+    <div class="stat-label">Win Rate</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-value"><%= stats.resolvedTrades %></div>
+    <div class="stat-label">Resolved Trades</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-value"><%= (stats.avgEdge * 100).toFixed(1) %>%</div>
+    <div class="stat-label">Avg Model Edge</div>
+  </div>
+</div>
+<h2>Performance by Category</h2>
+<div class="card">
+<% const cats = Object.entries(stats.byCategory); %>
+<% if (cats.length === 0) { %>
+  <p style="color: #8b8fa3;">No category data yet.</p>
+<% } else { %>
+  <table>
+    <tr><th>Category</th><th>Trades</th><th>Wins</th><th>Losses</th><th>Win Rate</th><th>P&L</th><th>Avg Edge</th></tr>
+    <% cats.forEach(([name, data]) => { %>
+    <tr>
+      <td><%= name %></td>
+      <td><%= data.total %></td>
+      <td><%= data.wins %></td>
+      <td><%= data.losses %></td>
+      <td><%= data.winRate.toFixed(1) %>%</td>
+      <td class="<%= data.pnl >= 0 ? 'positive' : 'negative' %>">$<%= data.pnl.toFixed(2) %></td>
+      <td><%= (data.avgEdge * 100).toFixed(1) %>%</td>
+    </tr>
+    <% }); %>
+  </table>
+<% } %>
+</div>
+<h2>Daily Stats</h2>
+<div class="card">
+<% if (dailyStats.length === 0) { %>
+  <p style="color: #8b8fa3;">No daily stats yet.</p>
+<% } else { %>
+  <table>
+    <tr><th>Date</th><th>Markets</th><th>Opened</th><th>Resolved</th><th>Daily P&L</th><th>Cumulative</th><th>Win Rate</th></tr>
+    <% dailyStats.forEach(d => { %>
+    <tr>
+      <td><%= d.date %></td>
+      <td><%= d.markets_tracked %></td>
+      <td><%= d.trades_opened %></td>
+      <td><%= d.trades_resolved %></td>
+      <td class="<%= d.daily_pnl >= 0 ? 'positive' : 'negative' %>">$<%= d.daily_pnl.toFixed(2) %></td>
+      <td class="<%= d.cumulative_pnl >= 0 ? 'positive' : 'negative' %>">$<%= d.cumulative_pnl.toFixed(2) %></td>
+      <td><%= d.win_rate.toFixed(1) %>%</td>
+    </tr>
+    <% }); %>
+  </table>
+<% } %>
+</div>
+<%- include('footer') %>
