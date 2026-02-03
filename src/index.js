@@ -1,3 +1,5 @@
+import { mkdirSync } from 'fs';
+import { dirname } from 'path';
 import { loadConfig } from './config.js';
 import { createDatabase } from './db.js';
 import { createKalshiClient } from './kalshi-client.js';
@@ -23,6 +25,12 @@ export const timing = { delay: (ms) => new Promise(r => setTimeout(r, ms)) };
 export async function main() {
   const config = loadConfig();
   const dbPath = process.env.DB_PATH || './data/kalshi.db';
+
+  // Ensure DB directory exists (Railway volume mount may not have subdirs)
+  if (dbPath !== ':memory:') {
+    mkdirSync(dirname(dbPath), { recursive: true });
+  }
+
   const { db, close } = createDatabase(dbPath);
   const client = createKalshiClient({ baseUrl: config.kalshiApiBase });
 
