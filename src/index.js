@@ -33,8 +33,9 @@ export async function main() {
 
   // --- Web server ---
   const app = createApp({ db, config });
-  const server = app.listen(config.port, () => {
-    console.log(`[kalshi-trader] Dashboard listening on http://localhost:${config.port}`);
+  const host = process.env.HOST || '0.0.0.0';
+  const server = app.listen(config.port, host, () => {
+    console.log(`[kalshi-trader] Dashboard listening on http://${host}:${config.port}`);
   });
 
   // --- Model runner ---
@@ -89,12 +90,12 @@ export async function main() {
       // 3. Execute paper trades on signals
       if (signals.length > 0) {
         const bankroll = calculateBankroll(db, config.paperBankroll);
-        const trades = executePaperTrades(db, signals, {
+        const { opened, skipped } = executePaperTrades(db, signals, {
           startingBankroll: config.paperBankroll,
           kellyMultiplier: config.kellyFraction,
           maxPositionPct: config.maxPositionPct,
         });
-        console.log(`[models] Opened ${trades.length} paper trades (bankroll: $${bankroll.toFixed(2)})`);
+        console.log(`[models] Paper trades: ${opened} opened, ${skipped} skipped (available: $${bankroll.available.toFixed(2)})`);
       }
     } catch (err) {
       console.error('[models] Cycle error:', err.message);

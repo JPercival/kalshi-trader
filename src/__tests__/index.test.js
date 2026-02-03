@@ -58,14 +58,14 @@ describe('main', () => {
     process.on = vi.fn();
     timing.delay = vi.fn(() => Promise.resolve());
     // Re-apply mock implementations after clearAllMocks
-    mocks.listen.mockImplementation((port, cb) => { if (cb) cb(); return mockServer; });
+    mocks.listen.mockImplementation((...args) => { const cb = args[args.length - 1]; if (typeof cb === 'function') cb(); return mockServer; });
     mocks.ingest.mockResolvedValue({ upserted: 5, total: 100 });
     mocks.snapshot.mockReturnValue(42);
     mocks.runAll.mockResolvedValue([{ ticker: 'T1' }]);
     mocks.detect.mockReturnValue([]);
     mocks.resolve.mockReturnValue([]);
-    mocks.execute.mockReturnValue([]);
-    mocks.bankroll.mockReturnValue(480);
+    mocks.execute.mockReturnValue({ opened: 0, skipped: 0 });
+    mocks.bankroll.mockReturnValue({ available: 480, invested: 20, realizedPnl: 0, totalValue: 500 });
   });
 
   afterEach(() => {
