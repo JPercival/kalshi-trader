@@ -24,6 +24,9 @@ const __dirname = dirname(__filename);
 export function createApp({ db, config }) {
   const app = express();
 
+  // Trust Railway's reverse proxy (needed for secure cookies, correct req.ip, etc.)
+  app.set('trust proxy', 1);
+
   // View engine setup
   app.set('view engine', 'ejs');
   app.set('views', join(__dirname, '..', 'views'));
